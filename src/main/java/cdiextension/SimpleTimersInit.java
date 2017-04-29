@@ -1,5 +1,8 @@
 package cdiextension;
 
+import de.clojj.simpletimers.DelayQueueScheduler;
+import de.clojj.simpletimers.TimerObjectMillis;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Destroyed;
 import javax.enterprise.context.Initialized;
@@ -17,21 +20,30 @@ public class SimpleTimersInit {
 
     public void init(@Observes @Initialized(ApplicationScoped.class) Object init) {
 
+        DelayQueueScheduler delayQueueScheduler = new DelayQueueScheduler(true, true);
+        delayQueueScheduler.debugPrint("initialization...");
+
         for (TimersInstance timersInstance : timersInstances) {
-            String name = timersInstance.getClazz().getSimpleName();
+
+            // TODO CDI beans
+            // instance already in timersInstance
+
+            // TODO EJBs
             try {
                 InitialContext ctx = new InitialContext();
+                String name = timersInstance.getClazz().getSimpleName();
                 Object instance = ctx.lookup("java:module/" + name);
 
-                try {
-                    Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
-                    System.out.println("result = " + result);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-
+                delayQueueScheduler.add(new TimerObjectMillis(2000, true, aLong -> {
+                    try {
+                        Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
+                        System.out.println("result = " + result);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }));
             } catch (NamingException e) {
                 e.printStackTrace();
             }
