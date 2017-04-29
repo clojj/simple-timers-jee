@@ -25,27 +25,42 @@ public class SimpleTimersInit {
 
         for (TimersInstance timersInstance : timersInstances) {
 
-            // TODO CDI beans
-            // instance already in timersInstance
-
-            // TODO EJBs
-            try {
-                InitialContext ctx = new InitialContext();
-                String name = timersInstance.getClazz().getSimpleName();
-                Object instance = ctx.lookup("java:module/" + name);
-
-                delayQueueScheduler.add(new TimerObjectMillis(2000, true, aLong -> {
+            switch (timersInstance.getType()) {
+                case EJB:
                     try {
-                        Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
-                        System.out.println("result = " + result);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
+                        // TODO EJBs
+                        InitialContext ctx = new InitialContext();
+                        String name = timersInstance.getClazz().getSimpleName();
+                        Object instance = ctx.lookup("java:module/" + name);
+
+                        // TODO get timer setting from TimersInstance
+                        delayQueueScheduler.add(new TimerObjectMillis(2000, true, aLong -> {
+                            try {
+                                Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
+                                System.out.println("result EJB = " + result);
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                e.printStackTrace();
+                            }
+                        }));
+                    } catch (NamingException e) {
                         e.printStackTrace();
                     }
-                }));
-            } catch (NamingException e) {
-                e.printStackTrace();
+                    break;
+
+                case CDI:
+                    // TODO CDI beans
+                    Object instance = timersInstance.getCdiInstance();
+
+                    // TODO get timer setting from TimersInstance
+                    delayQueueScheduler.add(new TimerObjectMillis(5000, true, aLong -> {
+                        try {
+                            Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
+                            System.out.println("result CDI = " + result);
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    }));
+                    break;
             }
         }
     }

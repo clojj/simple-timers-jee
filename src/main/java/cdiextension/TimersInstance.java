@@ -6,7 +6,8 @@ class TimersInstance {
 
     private Class<?> clazz;
     private AnnotatedMethod<?> method;
-    private Object instance;
+    private Object cdiInstance;
+    private BeanType type;
 
     public Class<?> getClazz() {
         return clazz;
@@ -24,11 +25,19 @@ class TimersInstance {
         this.method = method;
     }
 
-    public Object getInstance() {
-        return instance;
+    public Object getCdiInstance() {
+        return cdiInstance;
     }
 
-    public void setInstance(Object instance) {
-        this.instance = instance;
+    public void setCdiInstance(Object cdiInstance) {
+        this.cdiInstance = cdiInstance;
+    }
+
+    public void setType(BeanType type) {
+        this.type = type;
+    }
+
+    public BeanType getType() {
+        return type;
     }
 }
