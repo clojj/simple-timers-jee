@@ -52,12 +52,12 @@ public class SimpleTimersExtension<R> implements Extension {
         }
 
         // move list of beans to SimpleTimersInit
-        Class<?> clazz = SimpleTimersInit.class;
+        Class<?> clazz = SimpleTimersManager.class;
         Set<Bean<?>> beans = beanManager.getBeans(clazz);
         final Bean<?> appInitBean = beanManager.resolve(beans);
         CreationalContext<?> creationalContext = beanManager.createCreationalContext(appInitBean);
         Object instance = beanManager.getReference(appInitBean, clazz, creationalContext);
-        ((SimpleTimersInit) instance).getTimersInstances().addAll(timersInstances);
+        ((SimpleTimersManager) instance).getTimersInstances().addAll(timersInstances);
     }
 
 }

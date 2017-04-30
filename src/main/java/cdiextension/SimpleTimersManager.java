@@ -3,6 +3,8 @@ package cdiextension;
 import de.clojj.simpletimers.DelayQueueScheduler;
 import de.clojj.simpletimers.TimerObjectMillis;
 
+import javax.annotation.Resource;
+import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Destroyed;
 import javax.enterprise.context.Initialized;
@@ -14,14 +16,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
-public class SimpleTimersInit {
+public class SimpleTimersManager {
+
+    @Resource
+    private ManagedThreadFactory managedThreadFactory;
 
     private List<TimersInstance> timersInstances = new ArrayList<>();
 
-    public void init(@Observes @Initialized(ApplicationScoped.class) Object init) {
+    private DelayQueueScheduler delayQueueScheduler;
 
-        DelayQueueScheduler delayQueueScheduler = new DelayQueueScheduler(true, true);
-        delayQueueScheduler.debugPrint("initialization...");
+    public void init(@Observes @Initialized(ApplicationScoped.class) Object init) {
+        delayQueueScheduler = new DelayQueueScheduler();
+        delayQueueScheduler.debugPrint("Starting timers...");
+        Thread thread = managedThreadFactory.newThread(delayQueueScheduler.timerThreadInstance());
+        delayQueueScheduler.startWith(thread);
 
         for (TimersInstance timersInstance : timersInstances) {
 
