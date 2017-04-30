@@ -4,6 +4,7 @@ import de.clojj.simpletimers.DelayQueueScheduler;
 import de.clojj.simpletimers.TimerObjectMillis;
 
 import javax.annotation.Resource;
+import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Destroyed;
@@ -14,12 +15,16 @@ import javax.naming.NamingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 @ApplicationScoped
 public class SimpleTimersManager {
 
     @Resource
     private ManagedThreadFactory managedThreadFactory;
+
+    @Resource
+    private ManagedExecutorService managedExecutorService;
 
     private List<TimersInstance> timersInstances = new ArrayList<>();
 
@@ -42,13 +47,15 @@ public class SimpleTimersManager {
                         Object instance = ctx.lookup("java:module/" + name);
 
                         // TODO get timer setting from TimersInstance
-                        delayQueueScheduler.add(new TimerObjectMillis(2000, true, aLong -> {
-                            try {
-                                Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
-                                System.out.println("result EJB = " + result);
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                e.printStackTrace();
-                            }
+                        delayQueueScheduler.add(new TimerObjectMillis(1000, true, aLong -> {
+                            Future<?> future = managedExecutorService.submit(() -> {
+                                try {
+                                    Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
+                                    System.out.println("result EJB = " + result);
+                                } catch (IllegalAccessException | InvocationTargetException e) {
+                                    e.printStackTrace();
+                                }
+                            });
                         }));
                     } catch (NamingException e) {
                         e.printStackTrace();
@@ -60,13 +67,15 @@ public class SimpleTimersManager {
                     Object instance = timersInstance.getCdiInstance();
 
                     // TODO get timer setting from TimersInstance
-                    delayQueueScheduler.add(new TimerObjectMillis(5000, true, aLong -> {
-                        try {
-                            Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
-                            System.out.println("result CDI = " + result);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
+                    delayQueueScheduler.add(new TimerObjectMillis(2000, true, aLong -> {
+                        Future<?> future = managedExecutorService.submit(() -> {
+                            try {
+                                Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
+                                System.out.println("result CDI = " + result);
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                e.printStackTrace();
+                            }
+                        });
                     }));
                     break;
             }
