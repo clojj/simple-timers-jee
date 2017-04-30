@@ -1,5 +1,14 @@
 package cdiextension;
 
+import com.cronutils.model.Cron;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.model.field.CronField;
+import com.cronutils.model.field.CronFieldName;
+import com.cronutils.model.field.expression.Every;
+import com.cronutils.model.field.expression.FieldExpression;
+import com.cronutils.parser.CronParser;
+
 import javax.ejb.Stateless;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
@@ -14,17 +23,31 @@ public class SimpleTimersExtension<R> implements Extension {
 
     private List<TimersInstance> timersInstances = new ArrayList<>();
 
+    private CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
+
     public void addTimers(@Observes ProcessAnnotatedType<R> pat, BeanManager beanManager) {
         this.beanManager = beanManager;
         AnnotatedType<R> at = pat.getAnnotatedType();
         for (AnnotatedMethod<? super R> method : at.getMethods()) {
             if (method.isAnnotationPresent(SimpleTimer.class)) {
+                SimpleTimer annotation = method.getAnnotation(SimpleTimer.class);
+                Cron cron = parser.parse(annotation.value());
+
+                TimersInstance timersInstance = new TimersInstance();
 
                 // TODO read timer setting
+                // TODO use visitor or instanceof ?
+                CronField field = cron.retrieve(CronFieldName.SECOND);
+                FieldExpression expression = field.getExpression();
+                if (expression instanceof Every) {
+                    Every every = (Every) expression;
+                    Integer seconds = every.getPeriod().getValue();
+                    System.out.println("seconds = " + seconds);
+                    timersInstance.setSeconds(seconds);
+                }
 
                 Class<?> clazz = method.getJavaMember().getDeclaringClass();
 
-                TimersInstance timersInstance = new TimersInstance();
                 if (at.isAnnotationPresent(Stateless.class)) {
                     timersInstance.setType(BeanType.EJB);
                 } else {

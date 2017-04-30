@@ -47,7 +47,8 @@ public class SimpleTimersManager {
                         Object instance = ctx.lookup("java:module/" + name);
 
                         // TODO get timer setting from TimersInstance
-                        delayQueueScheduler.add(new TimerObjectMillis(1000, true, aLong -> {
+                        // TODO refactor common code
+                        delayQueueScheduler.add(new TimerObjectMillis(timersInstance.getSeconds() * 1000, true, aLong -> {
                             Future<?> future = managedExecutorService.submit(() -> {
                                 try {
                                     Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);
@@ -67,7 +68,8 @@ public class SimpleTimersManager {
                     Object instance = timersInstance.getCdiInstance();
 
                     // TODO get timer setting from TimersInstance
-                    delayQueueScheduler.add(new TimerObjectMillis(2000, true, aLong -> {
+                    // TODO refactor common code
+                    delayQueueScheduler.add(new TimerObjectMillis(timersInstance.getSeconds() * 1000, true, aLong -> {
                         Future<?> future = managedExecutorService.submit(() -> {
                             try {
                                 Object result = timersInstance.getMethod().getJavaMember().invoke(instance, null);

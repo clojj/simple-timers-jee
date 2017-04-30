@@ -9,6 +9,9 @@ class TimersInstance {
     private Object cdiInstance;
     private BeanType type;
 
+    // TODO generalize !
+    private int seconds;
+
     public Class<?> getClazz() {
         return clazz;
     }
@@ -39,5 +42,13 @@ class TimersInstance {
 
     public BeanType getType() {
         return type;
+    }
+
+    public int getSeconds() {
+        return seconds;
+    }
+
+    public void setSeconds(int seconds) {
+        this.seconds = seconds;
     }
 }
