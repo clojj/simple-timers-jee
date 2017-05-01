@@ -4,8 +4,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class Util {
-    public static <T> void switchType(Object o, Consumer... a) {
-        for (Consumer consumer : a)
+    public static <T> void switchType(Object o, Consumer... consumers) {
+        for (Consumer consumer : consumers)
             consumer.accept(o);
     }
 
