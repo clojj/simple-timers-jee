@@ -2,20 +2,22 @@ package cdiextension;
 
 import javax.enterprise.inject.spi.AnnotatedMethod;
 
+import com.cronutils.model.Cron;
+
 class ScheduledMethod {
 
     private BeanType type;
     private Class<?> clazz;
     private AnnotatedMethod<?> method;
-    private long delayMillis;
+    private Cron cron;
 
     private Object instance;
 
-    public ScheduledMethod(BeanType type, Class<?> clazz, AnnotatedMethod<?> method, long delayMillis) {
+    public ScheduledMethod(BeanType type, Class<?> clazz, AnnotatedMethod<?> method, Cron cron) {
         this.type = type;
         this.clazz = clazz;
         this.method = method;
-        this.delayMillis = delayMillis;
+        this.cron = cron;
     }
 
     public BeanType getType() {
@@ -30,8 +32,8 @@ class ScheduledMethod {
         return method;
     }
 
-    public long getDelayMillis() {
-        return delayMillis;
+    public Cron getCron() {
+        return cron;
     }
 
     public Object getInstance() {

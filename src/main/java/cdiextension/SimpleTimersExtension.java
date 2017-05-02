@@ -1,24 +1,24 @@
 package cdiextension;
 
-import com.cronutils.model.Cron;
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.model.field.CronField;
-import com.cronutils.model.field.CronFieldName;
-import com.cronutils.model.field.expression.Every;
-import com.cronutils.parser.CronParser;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import javax.enterprise.inject.spi.AfterDeploymentValidation;
+import javax.enterprise.inject.spi.AnnotatedMethod;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessAnnotatedType;
 
-import static utils.Util.caze;
-import static utils.Util.switchType;
+import com.cronutils.model.Cron;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.parser.CronParser;
 
 public class SimpleTimersExtension<R> implements Extension {
 
@@ -45,35 +45,9 @@ public class SimpleTimersExtension<R> implements Extension {
                 Duration duration = executionTime.timeToNextExecution(ZonedDateTime.now());
                 */
 
-                // TODO use complete cron info
-                Map<CronFieldName, CronField> fieldMap = cron.retrieveFieldsAsMap();
-                fieldMap.forEach((key, value) -> {
-                    switchType(value.getExpression(),
-                            caze(Every.class, every -> {
-                                switch (key) {
-                                    case SECOND:
-                                        int delayMillis = every.getPeriod().getValue() * 1000;
-                                        ScheduledMethod scheduledMethod = new ScheduledMethod(type, clazz, method, delayMillis);
-                                        scheduledMethods.add(scheduledMethod);
-                                        break;
-                                    case MINUTE:
-                                        break;
-                                    case HOUR:
-                                        break;
-                                    case DAY_OF_MONTH:
-                                        break;
-                                    case MONTH:
-                                        break;
-                                    case DAY_OF_WEEK:
-                                        break;
-                                    case YEAR:
-                                        break;
-                                }
-                            })
-                            // TODO: caze(Always.class, always -> {}),
-                            // TODO: caze(QuestionMark.class, questionMark -> {})
-                    );
-                });
+	            ScheduledMethod scheduledMethod = new ScheduledMethod(type, clazz, method, cron);
+	            scheduledMethods.add(scheduledMethod);
+
             }
         }
     }

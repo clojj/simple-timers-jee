@@ -1,7 +1,9 @@
 package cdiextension;
 
-import de.clojj.simpletimers.DelayQueueScheduler;
-import de.clojj.simpletimers.TimerObjectMillis;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -13,10 +15,9 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.CDI;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
+
+import de.clojj.simpletimers.DelayQueueScheduler;
+import de.clojj.simpletimers.TimerObjectCron;
 
 @ApplicationScoped
 public class SimpleTimersManager {
@@ -61,7 +62,7 @@ public class SimpleTimersManager {
         // queue all timers
         for (ScheduledMethod scheduledMethod : scheduledMethods) {
             // TODO repeating- and non-repeating-timers
-            delayQueueScheduler.add(new TimerObjectMillis(scheduledMethod.getDelayMillis(), true, now -> {
+            delayQueueScheduler.add(new TimerObjectCron(scheduledMethod.getCron(), now -> {
                 Future<?> future = managedExecutorService.submit(() -> {
                     try {
                         Object result = scheduledMethod.getMethod().getJavaMember().invoke(scheduledMethod.getInstance());
