@@ -1,24 +1,17 @@
 package cdiextension;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import javax.ejb.Stateless;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterDeploymentValidation;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
-
 import com.cronutils.model.Cron;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
+
+import javax.ejb.Stateless;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class SimpleTimersExtension<R> implements Extension {
 
@@ -40,11 +33,6 @@ public class SimpleTimersExtension<R> implements Extension {
 
                 SimpleTimer annotation = method.getAnnotation(SimpleTimer.class);
                 Cron cron = parser.parse(annotation.value());
-                /* TODO use this for absolute time ?
-                ExecutionTime executionTime = ExecutionTime.forCron(cron);
-                Duration duration = executionTime.timeToNextExecution(ZonedDateTime.now());
-                */
-
 	            ScheduledMethod scheduledMethod = new ScheduledMethod(type, clazz, method, cron);
 	            scheduledMethods.add(scheduledMethod);
 
