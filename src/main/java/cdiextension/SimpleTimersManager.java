@@ -1,9 +1,7 @@
 package cdiextension;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
+import de.clojj.simpletimers.DelayQueueScheduler;
+import de.clojj.simpletimers.TimerObjectCron;
 
 import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
@@ -15,9 +13,10 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.CDI;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-
-import de.clojj.simpletimers.DelayQueueScheduler;
-import de.clojj.simpletimers.TimerObjectCron;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
 
 @ApplicationScoped
 public class SimpleTimersManager {
@@ -61,7 +60,6 @@ public class SimpleTimersManager {
 
         // queue all timers
         for (ScheduledMethod scheduledMethod : scheduledMethods) {
-            // TODO repeating- and non-repeating-timers
             delayQueueScheduler.add(new TimerObjectCron(scheduledMethod.getCron(), now -> {
                 Future<?> future = managedExecutorService.submit(() -> {
                     try {
@@ -79,6 +77,7 @@ public class SimpleTimersManager {
     }
 
     public void destroy(@Observes @Destroyed(ApplicationScoped.class) Object init) {
+        System.out.println("STOP simple-timers scheduler");
         delayQueueScheduler.stop();
     }
 }
