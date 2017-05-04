@@ -9,8 +9,10 @@ import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Destroyed;
 import javax.enterprise.context.Initialized;
+import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.CDI;
+import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.lang.reflect.InvocationTargetException;
@@ -26,6 +28,9 @@ public class SimpleTimersManager {
 
     @Resource
     private ManagedExecutorService managedExecutorService;
+
+    @Inject
+    Event<TimerFiredEvent> timerFiredEvent;
 
     private List<ScheduledMethod> scheduledMethods = new ArrayList<>();
 
@@ -47,7 +52,7 @@ public class SimpleTimersManager {
                         InitialContext ctx = new InitialContext();
                         instance = ctx.lookup("java:module/" + scheduledMethod.getClazz().getSimpleName());
                     } catch (NamingException e) {
-                        e.printStackTrace();
+                        throw new RuntimeException("EJB not found: ", e);
                     }
                     break;
 
@@ -60,15 +65,20 @@ public class SimpleTimersManager {
 
         // queue all timers
         for (ScheduledMethod scheduledMethod : scheduledMethods) {
-            delayQueueScheduler.add(new TimerObjectCron(scheduledMethod.getCron(), now -> {
+            TimerObjectCron timerObject = new TimerObjectCron(scheduledMethod.getCron());
+            timerObject.setConsumer(now -> {
+                timerFiredEvent.fire(new TimerFiredEvent(timerObject, now));
                 Future<?> future = managedExecutorService.submit(() -> {
                     try {
                         Object result = scheduledMethod.getMethod().getJavaMember().invoke(scheduledMethod.getInstance());
+                        // TODO handle result...
+
                     } catch (IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
+                        throw new RuntimeException("method call failed: ", e);
                     }
                 });
-            }));
+            });
+            delayQueueScheduler.add(timerObject);
         }
     }
 
