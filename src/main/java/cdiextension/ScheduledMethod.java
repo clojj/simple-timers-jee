@@ -1,8 +1,8 @@
 package cdiextension;
 
-import javax.enterprise.inject.spi.AnnotatedMethod;
-
 import com.cronutils.model.Cron;
+
+import javax.enterprise.inject.spi.AnnotatedMethod;
 
 class ScheduledMethod {
 
@@ -28,7 +28,7 @@ class ScheduledMethod {
         return clazz;
     }
 
-    public AnnotatedMethod<?> getMethod() {
+    public AnnotatedMethod getMethod() {
         return method;
     }
 

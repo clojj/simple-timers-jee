@@ -46,19 +46,17 @@ public class SimpleTimersManager {
         // get all bean instances
         for (ScheduledMethod scheduledMethod : scheduledMethods) {
             Object instance = null;
-            switch (scheduledMethod.getType()) {
-                case EJB:
-                    try {
-                        InitialContext ctx = new InitialContext();
-                        instance = ctx.lookup("java:module/" + scheduledMethod.getClazz().getSimpleName());
-                    } catch (NamingException e) {
-                        throw new RuntimeException("EJB not found: ", e);
-                    }
-                    break;
+            if (scheduledMethod.getType() == BeanType.EJB) {
+                try {
+                    InitialContext ctx = new InitialContext();
+                    instance = ctx.lookup("java:module/" + scheduledMethod.getClazz().getSimpleName());
+                } catch (NamingException e) {
+                    throw new RuntimeException("EJB not found: ", e);
+                }
 
-                case CDI:
-                    instance = CDI.current().select(scheduledMethod.getClazz()).get();
-                    break;
+            } else if (scheduledMethod.getType() == BeanType.CDI) {
+                instance = CDI.current().select(scheduledMethod.getClazz()).get();
+
             }
             scheduledMethod.setInstance(instance);
         }
@@ -87,7 +85,6 @@ public class SimpleTimersManager {
     }
 
     public void destroy(@Observes @Destroyed(ApplicationScoped.class) Object init) {
-        System.out.println("STOP simple-timers scheduler");
         delayQueueScheduler.stop();
     }
 }

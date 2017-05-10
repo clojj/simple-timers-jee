@@ -18,10 +18,11 @@ import java.util.Set;
 
 public class SimpleTimersExtension<R> implements Extension {
 
-    private static Set<Class<? extends Annotation>> EJB_ANNOTATIONS = new HashSet<Class<? extends Annotation>>() {{
-        add(Stateless.class);
-        add(Singleton.class);
-    }};
+    private static final Set<Class<? extends Annotation>> EJB_ANNOTATIONS = new HashSet<>();
+    static {
+        EJB_ANNOTATIONS.add(Stateless.class);
+        EJB_ANNOTATIONS.add(Singleton.class);
+    };
 
     private BeanManager beanManager;
 
